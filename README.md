@@ -1,8 +1,11 @@
-# Baisc Parameter Reader for rust
+# Basic Parameter Reader for rust
 Very basic file parser to easily pass down parameters to Rust.<br>
 For use for example for physics simulation in Rust. 
 This works nicely in conjection with [Python Simulation Manager](https://github.com/so-groenen/python_simulation_manager) to control,
 from a Python notebook, high-performance calculations in Rust.<br>
+Example usage: [2D Ising Simulation using Metropolis algorithm in Rust](https://github.com/so-groenen/2d_ising_in_rust) as well as
+  [Swendsen-Wang Cluster algorithm in Rust](https://github.com/so-groenen/swendsen_wang_ising_rust).
+
 
 # Basic Usage:
 Let us assume we want to send the following parameters in a text file `basic_parameters.txt`:
