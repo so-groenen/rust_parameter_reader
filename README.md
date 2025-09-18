@@ -1,4 +1,4 @@
-# Rust Parameter Reader
+# Baisc Parameter Reader for rust
 Very basic file parser to easily pass down parameters to Rust.<br>
 For use for example for physics simulation in Rust. 
 This works nicely in conjection with [Python Simulation Manager](https://github.com/so-groenen/python_simulation_manager) to control,
@@ -83,14 +83,30 @@ The example can be run using cargo & passing the ` examples/basic_parameters.txt
 ```
 cargo run --example basic_example examples/basic_parameters.txt
 ```
+# Adding to project:
 
+In your project:
+```
+cargo add --git https://github.com/so-groenen/rust_parameter_reader.git
+```
+or manually in the *Cargo.toml*:
+```
+[dependencies]
+parameter_reader = { git = "https://github.com/so-groenen/rust_parameter_reader.git" }
+```
 # Tests & error handling:
 
 Use 
 ```
 cargo test -- --nocapture
 ```
-to run the tests with dbg output. <br> The tests 'tests' the following cases: "bad delimiter", "file not found", "missing parameters" and of course "it_works".<br> 
+to run the tests with dbg output. <br> The tests 'tests' the following cases:
+* "bad delimiter",
+* "file not found",
+* "missing parameters"
+and of course 
+* "it_works".<br> 
+
 Errors are handled by the `ParameterError` enum. If Rust needs parameters that are not present in the file, an error `ParameterError::MissingParam(missing)` will be returned, containing a vector of the missing files.<br>
 Similarly, if the file contains a different delimiter (say *"="* instead of *":"*), an error `ParameterError::BadDelimiter(line)` will be returned, where *line* is the line responsible for the error.<br>
 Other standard I/O errors is returned by `ParameterError::ReadContentError(runtime_error)` where `runtime_error` is the String display of the IO error.
