@@ -56,6 +56,7 @@ impl ParameterReader
         {
             for name in self.parameters
             {
+                let name = name.to_string().push(delimiter);
                 if line.contains(name)
                 {
                     let Some((_, value)) = line.split_once(delimiter) else
