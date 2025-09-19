@@ -56,10 +56,11 @@ impl ParameterReader
         {
             for name in self.parameters
             {
-                let name = name.to_string().push(delimiter);
-                if line.contains(name)
+                if line.starts_with(name)
                 {
+                    let line = &line[..];
                     let Some((_, value)) = line.split_once(delimiter) else
+                    
                     {
                         return Err(ParameterError::BadDelimiter(line.to_string()));
                     };
