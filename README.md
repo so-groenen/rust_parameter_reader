@@ -38,7 +38,7 @@ fn main()
         std::process::exit(1);
     }
 
-    let reader = ParameterReader::build(&args[1], &PARAMETERS).unwrap_or_else(|err|
+    let reader = ParameterReader::build(&args[1]).unwrap_or_else(|err|
     {
         println!("Error: Could not create reader: {err}");
         std::process::exit(1);
@@ -55,7 +55,11 @@ fn main()
     //
     // -- snip --
     // 
-    let parameters = reader.parse_parameters(":").expect("Should be able to create parameter map!");
+    let parameters = reader.parse_parameters(":", &PARAMETERS).unwrap_or_else(|err|
+    {
+        println!("Error: Missing parameters/Bad delimiter at line: {err} ");
+        std::process::exit(1);
+    });
 
     let my_int: i32        = parameters["my_int"].parse().expect("Should be able to parse int!");
     let my_float: f32      = parameters["my_float"].parse().expect("Should be able to parse my_float!");
@@ -78,6 +82,14 @@ fn main()
         println!("my_array[{n}]={v}");
     }
 }
+```
+Alternatively, without checking for needed parameters, we could do
+```rust
+let parameters = reader.split_to_map(":").unwrap_or_else(|err|
+{
+    println!("Error: Bad delimiter at line: {err}");
+    std::process::exit(1);
+});
 ```
 
 # Running the example:

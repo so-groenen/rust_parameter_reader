@@ -10,7 +10,6 @@ const PARAMETERS: [&str; 5] =
     "my_bool",
     "my_string"];
 
-
 //  cargo run --example basic_example examples/basic_parameters.txt
 fn main()
 {
@@ -21,13 +20,13 @@ fn main()
         std::process::exit(1);
     }
 
-    let reader = ParameterReader::build(&args[1], &PARAMETERS).unwrap_or_else(|err|
+    let reader = ParameterReader::build(&args[1]).unwrap_or_else(|err|
     {
         println!("Error: Could not create reader: {err}");
         std::process::exit(1);
     });
 
-    let parameters = reader.parse_parameters(":").expect("Should be able to create parameter map!");
+    let parameters = reader.parse_parameters(&PARAMETERS, ":").expect("Should be able to create parameter map!");
 
     let my_int: i32        = parameters["my_int"].parse().expect("Should be able to parse int!");
     let my_float: f32      = parameters["my_float"].parse().expect("Should be able to parse my_float!");

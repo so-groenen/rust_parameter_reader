@@ -5,7 +5,7 @@ use std::collections::HashMap;
 pub struct ParameterReader
 {
     content: String,
-    parameters: &'static[&'static str]
+    // parameters: &'static[&'static str]
 }
 
 #[derive(Debug, PartialEq)]
@@ -36,7 +36,18 @@ impl std::fmt::Display for ParameterError
 
 impl ParameterReader
 {
-    pub fn build(file_name: &str, parameters: &'static[&'static str]) -> Result<Self, ParameterError>
+    // pub fn build(file_name: &str, parameters: &'static[&'static str]) -> Result<Self, ParameterError>
+    // {
+    //     let content   = match fs::read_to_string(file_name)
+    //     {
+    //         Ok(value) => value,
+    //         Err(err)  => return Err(ParameterError::ReadContentError(err.to_string()))
+    //     };
+        
+    //     let reader = Self {content, parameters};
+    //     Ok(reader)
+    // }
+    pub fn build(file_name: &str) -> Result<Self, ParameterError>
     {
         let content   = match fs::read_to_string(file_name)
         {
@@ -44,33 +55,52 @@ impl ParameterReader
             Err(err)  => return Err(ParameterError::ReadContentError(err.to_string()))
         };
         
-        let reader = Self {content, parameters};
+        let reader = Self {content};//, parameters};
         Ok(reader)
     }
-
-    pub fn parse_parameters(&self, delimiter: &'static str) -> Result<HashMap<&'static str, String>, ParameterError>
+    pub fn split_to_map<'a>(&'a self, delimiter: &'static str) -> Result<HashMap<&'a str, String>, ParameterError>
     {
-        let mut parameter_map: HashMap<&'static str, String> = HashMap::new();
-
+        let mut parameter_map: HashMap<&'a str, String> = HashMap::new();
         for line in self.content.lines()
         {
-            for name in self.parameters
+            let Some((key, value)) = line.split_once(delimiter) else
             {
-                if line.starts_with(name)
-                {
-                    let line = &line[..];
-                    let Some((_, value)) = line.split_once(delimiter) else
-                    
-                    {
-                        return Err(ParameterError::BadDelimiter(line.to_string()));
-                    };
-                    let value = value.trim();
+                return Err(ParameterError::BadDelimiter(line.to_string()));
+            };
+            let value = value.trim();
+            let key   = key.trim();
 
-                    parameter_map.insert(name, value.to_owned());
-                }
-            }
+            parameter_map.insert(key, value.to_owned());        
         }
-        let missing              = self.parameters.iter().filter(|&&name| !parameter_map.contains_key(name));
+        Ok(parameter_map)
+    }
+    pub fn parse_parameters<'a>(&'a self, parameters: &[&str], delimiter: &'static str) -> Result<HashMap<&'a str, String>, ParameterError>
+    {
+
+        let parameter_map = self.split_to_map(delimiter)?;
+        // let mut parameter_map: HashMap<&'static str, String> = HashMap::new();
+
+        
+        // for line in self.content.lines()
+        // {
+        //     for name in self.parameters
+        //     {
+        //         if line.starts_with(name)
+        //         {
+        //             let line = &line[..];
+        //             let Some((_, value)) = line.split_once(delimiter) else
+                    
+        //             {
+        //                 return Err(ParameterError::BadDelimiter(line.to_string()));
+        //             };
+        //             let value = value.trim();
+
+        //             parameter_map.insert(name, value.to_owned());
+        //         }
+        //     }
+        // }
+        // let missing              = self.parameters.iter().filter(|&&name| !parameter_map.contains_key(name));
+        let missing              = parameters.iter().filter(|&&name| !parameter_map.contains_key(name));
         let missing: Vec<String> = missing.map(|&name| name.to_string()).collect();
 
         if !missing.is_empty()
@@ -104,12 +134,12 @@ mod tests {
         file_name.push("test_good_format.txt");
 
         let file_name = file_name.display().to_string();
-        let reader    = ParameterReader::build(&file_name, &PARAMS);
+        let reader    = ParameterReader::build(&file_name);
         assert!(reader.is_ok(), "Reader is ok!");
 
         let reader = reader.unwrap();
 
-        let parameters = reader.parse_parameters(DELIM);
+        let parameters = reader.parse_parameters(&PARAMS, DELIM);
         assert!(parameters.is_ok(), "Parameters should be ok!");
         let parameters = parameters.unwrap();
 
@@ -145,12 +175,12 @@ mod tests {
         let error_line = "my_int= 42".to_string();
 
         let file_name = file_name.display().to_string();
-        let reader    = ParameterReader::build(&file_name, &PARAMS);
+        let reader    = ParameterReader::build(&file_name);
         assert!(reader.is_ok(), "Reader should be ok!");
 
         let reader = reader.unwrap();
 
-        let parameters = reader.parse_parameters(DELIM);
+        let parameters = reader.parse_parameters(&PARAMS, DELIM);
         assert!(parameters.is_err_and(|e| e == ParameterError::BadDelimiter(error_line)), "Parameters should be BadDelim!");
     }
 
@@ -162,12 +192,12 @@ mod tests {
         file_name.push("test_missing_bool.txt");
 
         let file_name = file_name.display().to_string();
-        let reader    = ParameterReader::build(&file_name, &PARAMS);
+        let reader    = ParameterReader::build(&file_name);
         assert!(reader.is_ok(), "Reader should be ok!");
 
         let reader = reader.unwrap();
 
-        let parameters = reader.parse_parameters(DELIM);
+        let parameters = reader.parse_parameters(&PARAMS, DELIM);
         assert!(parameters.is_err(), "Parameters should be missing!");
         
         let error = parameters.unwrap_err();
@@ -191,7 +221,7 @@ mod tests {
         file_name.push("i_love_javascript.txt");
 
         let file_name = file_name.display().to_string();
-        let reader    = ParameterReader::build(&file_name, &PARAMS);
+        let reader    = ParameterReader::build(&file_name);
         assert!(reader.is_err(), "Reader should be error!");
 
         let error = reader.unwrap_err();
